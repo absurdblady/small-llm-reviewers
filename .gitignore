@@ -1,0 +1,25 @@
+# local build outputs and bundles
+*.zip
+paper/draft-*.pdf
+results/preview/
+
+# LaTeX auxiliary files
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.toc
+
+# Python / Jupyter
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
