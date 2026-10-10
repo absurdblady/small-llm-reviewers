@@ -29,12 +29,12 @@
   fontupper=\small\ttfamily\raggedright\frenchspacing, parbox=false, before upper={\setlength{\parskip}{0.7em}}}
 \newcommand{\slot}[1]{\textcolor{blue!55!black}{\texttt{\{#1\}}}}
 
-% Anything in \fillme{...} still needs your input (shows up red in the PDF).
+% Anything in \fillme{...} still needs input (shows up red in the PDF).
 \newcommand{\fillme}[1]{\textcolor{red}{[#1]}}
 
 \title{\textbf{Can Small Language Models Review Research Papers?}\\[0.3em]
-\large A Pilot Study on ICLR 2024 Submissions}
-\author{Pawan Chaudhary\\ \small Independent Researcher}
+\large Leniency, Prompt Sensitivity, and Agreement with Human Reviewers on ICLR 2024 and 2025}
+\author{Pawan Chaudhary\\ \small Dakota State University}
 \date{October 2026}
 
 \begin{document}
@@ -43,46 +43,50 @@
 % =====================================================================
 \begin{abstract}
 \noindent
-Large language models (LLMs) are starting to be used as reviewers of research papers. Before trusting one, we should know whether its verdict depends on the paper or on how the question is asked. I tested three small open models (Qwen2.5 with 1.5, 3, and 7 billion parameters) on 60 papers submitted to ICLR 2024, half accepted and half rejected. Each model rated each paper four times, using four prompts that ask the same question in different words. I found three problems. First, the models are far too generous: every model gave a passing score to every paper. Second, the verdict depends on the wording: 18--33\% of papers are accepted under one prompt and rejected under another. Third, the models barely agree with human reviewers: their scores have little relationship with the reviewers' ratings, and even the largest model separates accepted from rejected papers only moderately well. A single prompt to a small LLM is therefore not a reliable paper review. All code and data are released.
+Large language models (LLMs) are starting to be used as reviewers of research papers. Before trusting one, we should know whether its verdict depends on the paper or on how the question is asked, and how it compares with a human reviewer. I tested four small open models (Qwen2.5 with 1.5, 3, and 7 billion parameters, and Phi-3.5-mini) on 400 papers submitted to ICLR, 200 from 2024 and 200 from 2025, half accepted and half rejected. Each model rated each paper's title and abstract with four prompts that ask the same question in different words. All four models give a passing score to 99--100\% of papers. When each prompt accepts its top half, 24--38\% of papers are accepted under one wording and rejected under another (random rankings would flip 88\%). The best model, Qwen2.5-7B, ranks papers with a correlation of 0.33 to the other reviewers' average on ICLR 2024, compared with 0.43 for a single human reviewer, but this falls to 0.28 against 0.52 on ICLR 2025, which the models cannot have seen during training; the smaller models fall close to zero. All models give higher scores to abstracts with more promotional words such as ``novel'' and ``state-of-the-art'', which human reviewers do not. A single prompt to a small LLM is therefore not a reliable paper review. All code, data, and model outputs are released.
 \end{abstract}
 
 % =====================================================================
 \section{Introduction}
 
-LLMs are now often used to judge the output of other models, and strong models agree with human judges about as often as humans agree with each other \citep{zheng2023judging}. The same idea is being applied to science. The AI Scientist \citep{lu2024aiscientist} writes complete research papers and uses an LLM reviewer to decide which ones are good, and \citet{liang2023feedback} study whether LLM feedback on real papers is useful. If the reviewer is unreliable, everything built on top of it is unreliable too.
+LLMs are now often used to judge the output of other models, and strong models agree with human judges about as often as humans agree with each other \citep{zheng2023judging}. The same idea is being applied to science. The AI Scientist \citep{lu2024aiscientist} writes complete research papers and uses an LLM reviewer to decide which ones are good, and several studies ask whether LLMs can review or give feedback on real papers \citep{liu2023reviewergpt, liang2023feedback, zhou2024reliable}. If the reviewer is unreliable, everything built on top of it is unreliable too.
 
-There is good reason to be careful. LLM judges can be swayed by details that should not matter, such as which answer is shown first or which one is longer \citep{zheng2023judging}, and small changes to how a prompt is formatted can change an LLM's answers a lot \citep{sclar2023quantifying, mizrahi2024state}. Most work on LLM reviewers uses large commercial models and a single fixed prompt. Much less is known about small open models, which are the ones students and small labs can actually run.
+There is good reason to be careful. LLM judges can be swayed by details that should not matter, such as which answer is shown first or which one is longer \citep{zheng2023judging}, and small changes to how a prompt is formatted can change an LLM's answers a lot \citep{sclar2023quantifying, mizrahi2024state}. Most work on LLM reviewers uses large commercial models and one fixed prompt. Much less is known about small open models, which are the ones students and small labs can actually run.
 
-This paper asks two simple questions:
+This paper asks three simple questions:
 \begin{enumerate}
   \item If a small LLM rates the same paper using prompts that mean the same thing, does it give the same verdict?
-  \item Does its verdict agree with human reviewers?
+  \item How close is its judgement to a human reviewer's?
+  \item What does it reward?
 \end{enumerate}
 
-The short answer to both is: not reliably. In more detail:
+\textbf{Contributions.}
 \begin{itemize}
-  \item \textbf{Too generous.} All three models gave a passing score (6 or more out of 10) to 100\% of papers, although only half were accepted.
-  \item \textbf{Sensitive to wording.} Between 18\% and 33\% of papers switch between accept and reject depending only on the prompt.
-  \item \textbf{Out of step with humans.} Model scores are only weakly related to human ratings. Larger models do somewhat better, but not by much.
+  \item \textbf{A measurement of leniency and prompt sensitivity} for four small open models on 400 ICLR submissions: the models accept almost everything, and a large share of verdicts depend on the wording of the prompt alone (Sections~\ref{sec:leniency}--\ref{sec:stability}).
+  \item \textbf{A comparison against a human ceiling}: how well one human reviewer agrees with the others, measured the same way as the models, and \textbf{a contamination check} on ICLR 2025 papers released after the models were trained (Section~\ref{sec:agreement}).
+  \item \textbf{Evidence about what the models reward}: their scores rise with promotional (``hype'') words, which human ratings ignore, while simple text baselines do about as well as the models at telling accepted from rejected papers (Section~\ref{sec:tracks}).
+  \item \textbf{Full release} of code, prompts, model outputs, and per-score probabilities, with pinned model and data versions.
 \end{itemize}
 
 % =====================================================================
 \section{Related Work}
 
 \textbf{LLMs as judges and reviewers.}
-\citet{zheng2023judging} found that GPT-4 agrees with human preferences over 80\% of the time, as often as humans agree with each other, but also that it favors answers shown first and answers that are longer. The AI Scientist \citep{lu2024aiscientist} built an LLM reviewer that follows conference reviewing guidelines and reported accuracy close to human reviewers on ICLR 2022 papers. \citet{liang2023feedback} found that GPT-4's comments on research papers overlap with human reviewers' comments about as much as two human reviewers overlap with each other. All of these use large commercial models and one prompt.
+\citet{zheng2023judging} found that GPT-4 agrees with human preferences over 80\% of the time, as often as humans agree with each other, but also that it favors answers shown first and answers that are longer. \citet{liu2023reviewergpt} tested GPT-4 on reviewing tasks such as spotting deliberately inserted errors and found it useful for some checks but unreliable as an overall judge. \citet{liang2023feedback} found that GPT-4's comments on research papers overlap with human reviewers' comments about as much as two human reviewers overlap with each other. \citet{zhou2024reliable} evaluated GPT-3.5 and GPT-4 on score prediction and review generation using ICLR reviews and concluded that the models are not yet reliable without human oversight. Other work builds multi-agent reviewers \citep{darcy2024marg} or simulates the whole review process with LLM agents \citep{jin2024agentreview}. The AI Scientist \citep{lu2024aiscientist} built an LLM reviewer that follows conference guidelines and reported accuracy close to human reviewers on ICLR 2022 papers. Almost all of this work uses large commercial models and a fixed prompt.
 
 \textbf{Sensitivity to prompts.}
-\citet{sclar2023quantifying} showed that formatting changes that do not change a prompt's meaning can cause large swings in LLM accuracy, and \citet{mizrahi2024state} argue that results should be reported across many versions of a prompt, not just one. This paper applies that idea to paper reviewing, with small models.
+\citet{sclar2023quantifying} showed that formatting changes that do not alter a prompt's meaning can cause large swings in LLM accuracy, and \citet{mizrahi2024state} argue that results should be reported across many versions of a prompt, not just one. This paper applies that idea to paper reviewing, with small open models, and adds a human ceiling and a contamination check.
 
 % =====================================================================
 \section{Method}
 
 \subsection{Papers}
-I used 60 papers submitted to ICLR 2024, a major machine learning conference: 30 accepted and 30 rejected, picked at random from papers with at least three reviews. ICLR publishes its reviews on OpenReview; I used a copy of them hosted on Hugging Face (\texttt{smallari/\allowbreak openreview-\allowbreak iclr2024-\allowbreak peer-\allowbreak reviews-\allowbreak RAW}). The models saw only each paper's title and abstract. For comparison I used the real decision and the average reviewer rating. Accepted papers had an average rating of 6.37 out of 10; rejected papers had 4.62.
+ICLR publishes every submission's reviews on OpenReview. I used copies of the ICLR 2024 and ICLR 2025 data hosted on Hugging Face, pinned to fixed versions (Appendix~\ref{app:details}). A paper counts as \emph{accepted} if its decision starts with ``Accept'' and as \emph{rejected} only if its decision is exactly ``Reject''. Papers with no decision, mostly withdrawn or desk-rejected submissions (1,624 in 2024 and 2,945 in 2025), are left out. I also required at least three reviews with a numeric rating. From each year I then picked 100 accepted and 100 rejected papers at random (seed 42).
+
+The models saw only each paper's title and abstract. For comparison I used the real decision and the reviewers' ratings, which on ICLR's scale can be 1, 3, 5, 6, 8, or 10. Accepted papers had an average rating of 6.37 (2024) and 6.58 (2025); rejected papers had 4.80 and 4.73. Each paper had about four reviews.
 
 \subsection{Models}
-I used three sizes of the Qwen2.5 model family \citep{qwen2024qwen25}: 1.5, 3, and 7 billion parameters. All three are free and open, and I ran them on free Kaggle GPUs.
+I used three sizes of the Qwen2.5 family \citep{qwen2024qwen25} (1.5, 3, and 7 billion parameters) and, as a second model family, Phi-3.5-mini \citep{abdin2024phi3} (3.8 billion parameters). All are free, open, instruction-tuned models, and all were run on free Kaggle GPUs. Qwen2.5 was released in September 2024 and Phi-3.5 in August 2024, so ICLR 2024 papers and reviews, which were public from early 2024, may be in their training data, while ICLR 2025 reviews, made public from November 2024, cannot be.
 
 \subsection{Prompts}
 I wrote four prompts that all ask for the same thing: an overall score for the paper from 1 (reject) to 10 (accept), answered with a single number. They differ only in details that should not matter (Table~\ref{tab:prompts}; full text in Appendix~\ref{app:prompts}). A good reviewer should give the same score whichever prompt it gets.
@@ -104,15 +108,17 @@ P4 (terse)  & Very short, with markdown headings \\
 \end{table}
 
 \subsection{Scores}
-For each rating I recorded two numbers. The first is simply the score the model writes. This turned out to be almost always 8, which makes differences hard to see. So I also used a finer score: the model's average answer, weighted by how likely it considers each score from 1 to 10. For example, a model that is 70\% sure of 8 and 30\% sure of 7 gets a finer score of 7.7. Technical details are in Appendix~\ref{app:details}.
+For each rating I recorded two numbers. The \emph{written score} is simply the number the model writes. It turns out to be almost always 8 or 9, which hides differences between papers. So I also used the \emph{expected score}: the model's average answer, weighted by how likely it considers each score from 1 to 10. For example, a model that is 70\% sure of 8 and 30\% sure of 7 has an expected score of 7.7. Technical details are in Appendix~\ref{app:details}.
 
 \subsection{What I measured}
 \begin{itemize}
-  \item \textbf{Generosity:} the share of ratings with a written score of 6 or more, which on ICLR's scale leans toward acceptance.
-  \item \textbf{Consistency across prompts:} how often a paper's verdict changes with the prompt. Under each prompt, the top 31\% of papers by finer score count as accepted, matching ICLR 2024's real acceptance rate. A paper \emph{flips} if it is accepted under one prompt and rejected under another. If the models ranked papers at random, about 76\% of papers would flip.
-  \item \textbf{Agreement with humans:} two standard measures. The \emph{correlation} with the average human rating runs from 0 (no relationship) to 1 (the model ranks papers exactly like the humans). The \emph{AUC} measures how well the score separates accepted from rejected papers: 0.5 is a coin flip, 1 is perfect.
+  \item \textbf{Leniency:} the share of written scores of 6 or more. On ICLR's scale, 6 means ``marginally above the acceptance threshold''.
+  \item \textbf{Consistency across prompts:} first, the \emph{mean pairwise Spearman correlation} between the rankings that two prompts produce (1 means identical rankings). Second, the \emph{verdict flip rate}: under each prompt, the top half of papers by expected score count as accepted, matching the 50/50 sample, and a paper \emph{flips} if it is accepted under one prompt and rejected under another. If the four prompts ranked papers at random, $1 - 2 \cdot 0.5^4 \approx 88\%$ of papers would flip. Third, the \emph{score shift}: how far the average score moves between the most and least generous prompt.
+  \item \textbf{Agreement with humans:} the \emph{Spearman correlation} $\rho$ between a model's expected score and the average human rating (0 means no relationship), and the \emph{AUC} for telling accepted from rejected papers (0.5 is a coin flip, 1 is perfect).
+  \item \textbf{Human ceiling:} the same correlation for a single human reviewer: pick one reviewer of each paper at random, correlate their rating with the average of that paper's other reviewers, and repeat 1,000 times. To compare a model on equal terms, I correlate the model's score with the same ``other reviewers'' average.
+  \item \textbf{Simple baselines:} abstract length, the number of promotional words in the abstract (such as ``novel'', ``state-of-the-art'', ``significantly''; full list in Appendix~\ref{app:details}), and a word-count classifier (TF-IDF with logistic regression, cross-validated).
 \end{itemize}
-With only 60 papers, every number has some uncertainty. Where I give a range in brackets, it is a 95\% confidence interval: the range the true value most likely falls in.
+Ranges in brackets are 95\% bootstrap confidence intervals. Because I run many tests (4 models $\times$ 5 prompt settings $\times$ 2 measures per year), an asterisk marks results that remain significant after the Holm correction for multiple comparisons. With 200 papers per year, a true correlation of 0.2 is detected 81\% of the time.
 
 % =====================================================================
 \section{Results}
@@ -120,99 +126,102 @@ With only 60 papers, every number has some uncertainty. Where I give a range in 
 \begin{table}[!htbp]
 \centering
 \small
-\begin{tabular}{lcccc}
-\toprule
-\textbf{Model} & \textbf{Most common} & \textbf{Passing score} & \textbf{Prompts agree} & \textbf{Papers that flip} \\
- & \textbf{written score} & \textbf{(6 or more)} & \textbf{on ranking} & \textbf{(random would be 76\%)} \\
-\midrule
-Qwen2.5 1.5B & 8 (71\% of ratings) & 100\% & 0.80 & 27\% \\
-Qwen2.5 3B   & 8 (86\% of ratings) & 100\% & 0.77 & 33\% \\
-Qwen2.5 7B   & 8 (69\% of ratings) & 100\% & 0.80 & 18\% \\
-\bottomrule
-\end{tabular}
-\caption{Generosity and consistency. ``Prompts agree on ranking'' is the average correlation between the rankings that two different prompts produce (1 = identical).}
+\input{tables/stability}
+\caption{Leniency and consistency across the four prompts (200 papers per year, half truly accepted). ``Prompts agree'' is the mean Spearman correlation between the rankings of two prompts. ``Verdict flips'' is the share of papers accepted under one prompt and rejected under another when each prompt accepts its top half. ``Score shift'' is the gap between the most and least generous prompt's average expected score. Brackets: 95\% confidence intervals.}
 \label{tab:stability}
 \end{table}
 
 \subsection{The models are far too generous}
 \label{sec:leniency}
-The models give almost every paper an 8, and every model gives a passing score to 100\% of papers, even though only half were accepted (Table~\ref{tab:stability}). A reviewer that accepts everything is not really reviewing. This also hides a second problem: if you only look at pass or fail, the models look perfectly consistent across prompts, but only because they never say no.
+Every model gives a written score of 6 or more to 99--100\% of papers, although only half were accepted (Table~\ref{tab:stability}). The Qwen models write ``8'' for 68--92\% of papers, and Phi-3.5-mini writes ``9'' for 84--85\%. A reviewer that accepts everything is not really reviewing. It also hides a second problem: if you only look at pass or fail, the models look perfectly consistent across prompts, but only because they never say no.
 
-I can only guess at the cause. These models are trained to be helpful and agreeable, and abstracts are written to sell the paper and rarely mention its weaknesses. Both would push toward a generous score.
+I can only guess at the cause. These models are trained to be helpful and agreeable, and abstracts are written to sell the paper and rarely mention its weaknesses. Both would push toward a generous score. Section~\ref{sec:tracks} gives some evidence for the second explanation.
 
 \subsection{The verdict depends on the wording}
-The finer score shows what the written score hides. The four prompts mostly agree on which papers are better than others (agreement around 0.8), so the models are not random. But when each prompt accepts its top 31\%, between 18\% (7B) and 33\% (3B) of papers are accepted under one prompt and rejected under another. That is far better than random (76\%), but it still means roughly one paper in four or five has its fate decided by the wording of the prompt rather than its content.
+\label{sec:stability}
+The expected score shows what the written score hides. For the Qwen models, the four prompts mostly agree on which papers are better (mean correlation 0.76--0.80), so the models are not ranking at random. But when each prompt accepts its top half, 34--38\% of papers are accepted under one wording and rejected under another, in both years. That is far below the 88\% expected from random rankings, but it means roughly one paper in three has its verdict decided by the wording of the prompt rather than its content. Phi-3.5-mini is more consistent with itself: its prompts agree more (mean correlation 0.86--0.87) and only 24--28\% of papers flip. As Section~\ref{sec:agreement} shows, it is also the model that agrees least with human reviewers, so being consistent across prompts is not the same as judging well.
 
-The prompt also shifts the scores as a whole. Just by changing the prompt, the average score moved by up to 0.84 points out of 10 (for the 3B model). Since most scores sit in a narrow band between about 7.5 and 9 (Figure~\ref{fig:spread}), a shift this large means any fixed cut-off for acceptance would depend on which prompt was used.
+Some prompt pairs disagree more than others (Appendix~\ref{app:pairwise}). For every model, the pairs that disagree most involve P3, the prompt that puts the instructions after the paper instead of before.
+
+The prompt also moves the scores as a whole. Just by changing the wording, a Qwen model's average expected score moves by 0.32 to 0.77 points out of 10 (0.43--0.44 for Phi-3.5-mini). Since most expected scores sit in a narrow band (Figure~\ref{fig:spread}), any fixed cut-off for acceptance would depend on which prompt was used.
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.92\textwidth]{figures/fig1_score_spread.png}
-\caption{Each column is one paper; the four markers are its finer scores (``expected score) under the four prompts, and the gray line spans the lowest to the highest. Papers are sorted from lowest to highest human rating. If the models agreed with humans, scores would rise from left to right; they barely do.}
+\includegraphics[width=0.95\textwidth]{figures/fig1_scores_vs_human.png}
+\caption{ICLR 2024. Each column is one paper, sorted by its average human rating (black line). Colored markers are the paper's expected scores under the four prompts; the gray line spans the lowest to the highest. Model scores sit in a narrow, generous band and rise only slightly with the human rating.}
 \label{fig:spread}
 \end{figure}
 
-\subsection{The models barely agree with human reviewers}
-The correlation between model scores and human ratings is between 0.01 and 0.24 (Table~\ref{tab:agreement}, Figure~\ref{fig:agreement}), which is weak. For almost every model and prompt, the confidence interval includes zero, so we cannot rule out that there is no relationship at all. Telling accepted papers apart from rejected ones works a little better and improves with model size: the AUC is about 0.60 for the 1.5B model and about 0.70 for the 7B model, where it is clearly better than a coin flip. So the largest model picks up a rough accept-or-reject signal, but it does not rank papers the way human reviewers do.
+\subsection{How close are the models to a human reviewer?}
+\label{sec:agreement}
 
 \begin{table}[!htbp]
 \centering
-\begin{tabular}{llcc}
-\toprule
-\textbf{Model} & \textbf{Prompt} & \textbf{Correlation with humans} & \textbf{AUC (accepted vs.\ rejected)} \\
-\midrule
-1.5B & P1 expert & 0.01 \small[$-$0.27, 0.27] & 0.60 \small[0.46, 0.74] \\
-     & P2 plain  & 0.05 \small[$-$0.21, 0.32] & 0.58 \small[0.42, 0.72] \\
-     & P3 after  & 0.05 \small[$-$0.19, 0.28] & 0.64 \small[0.49, 0.77] \\
-     & P4 terse  & 0.04 \small[$-$0.20, 0.29] & 0.60 \small[0.46, 0.74] \\
-     & Average of all four & 0.03 \small[$-$0.24, 0.29] & 0.61 \small[0.47, 0.75] \\
-\midrule
-3B   & P1 expert & 0.16 \small[$-$0.05, 0.37] & 0.66 \small[0.52, 0.80] \\
-     & P2 plain  & 0.13 \small[$-$0.13, 0.37] & 0.58 \small[0.42, 0.73] \\
-     & P3 after  & 0.04 \small[$-$0.20, 0.30] & 0.67 \small[0.52, 0.81] \\
-     & P4 terse  & 0.15 \small[$-$0.11, 0.39] & 0.58 \small[0.43, 0.73] \\
-     & Average of all four & 0.09 \small[$-$0.15, 0.32] & 0.64 \small[0.50, 0.78] \\
-\midrule
-7B   & P1 expert & 0.24 \small[0.01, 0.45] & 0.70 \small[0.56, 0.83] \\
-     & P2 plain  & 0.19 \small[$-$0.06, 0.41] & 0.70 \small[0.56, 0.83] \\
-     & P3 after  & 0.03 \small[$-$0.23, 0.30] & 0.68 \small[0.53, 0.80] \\
-     & P4 terse  & 0.15 \small[$-$0.09, 0.39] & 0.69 \small[0.55, 0.81] \\
-     & Average of all four & 0.17 \small[$-$0.08, 0.39] & 0.70 \small[0.57, 0.82] \\
-\bottomrule
-\end{tabular}
-\caption{Agreement with human reviewers, with 95\% confidence intervals in brackets. Correlation: 0 = no relationship. AUC: 0.5 = coin flip.}
+\small
+\setlength{\tabcolsep}{4pt}
+\input{tables/agreement}
+\caption{Agreement of expected scores with human reviewers. Correlation: Spearman $\rho$ with the average human rating (0 = no relationship). AUC: accepted vs.\ rejected (0.5 = coin flip). Brackets: 95\% confidence intervals. $^{*}$: significant after Holm correction across all tests in that year. Last row: one human reviewer's rating against the average of the others.}
 \label{tab:agreement}
 \end{table}
 
+\begin{table}[!htbp]
+\centering
+\input{tables/ceiling}
+\caption{Equal-terms comparison: Spearman correlation with the average of a paper's \emph{other} reviewers, for a model (average of its four prompts) and for one randomly chosen human reviewer, averaged over random draws.}
+\label{tab:ceiling}
+\end{table}
+
+On ICLR 2024 the models do better than the small pilot suggested. Agreement with the human average rises with model size, from $\rho = 0.20$ (1.5B) to $0.34$ (7B), and for Qwen2.5-3B and 7B most correlations stay significant after correcting for multiple comparisons (Table~\ref{tab:agreement}). Measured on equal terms, Qwen2.5-7B correlates 0.33 with the other reviewers' average, against 0.43 for a single human reviewer (Table~\ref{tab:ceiling}): roughly three-quarters of the way to one human reviewer. Telling accepted from rejected papers is harder: the best AUC is 0.67.
+
+On ICLR 2025, which the models cannot have seen during training, the picture changes. Human reviewers agree with each other more (0.52), while the models agree with them less: Qwen2.5-7B falls to 0.28, and the 1.5B and 3B models fall to 0.12--0.13, with no result that survives the correction for multiple comparisons. Phi-3.5-mini agrees least with humans in both years: the average of its prompts reaches 0.16 on ICLR 2024 and 0.04 on ICLR 2025. This drop is what we would expect if part of the 2024 agreement came from the models having seen those papers or reviews during training, but it does not prove it: the confidence intervals overlap, and the two years also differ in other ways.
+
+The prompt matters here too. On ICLR 2025, Qwen2.5-7B's correlation ranges from 0.16 (P3) to 0.35 (P4) depending only on the wording. Averaging the four prompts gives a result close to a typical prompt, not the best one. Averaging is still the safer choice: the best prompt can only be found after comparing against human ratings, and it was not the same prompt in both years.
+
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig2_agreement.png}
-\caption{Correlation between model scores and human ratings for each prompt. Dots are the estimates, lines are 95\% confidence intervals, and the dashed line marks zero (no relationship). Nearly every line crosses zero.}
+\includegraphics[width=\textwidth]{figures/fig2_agreement_vs_ceiling.png}
+\caption{ICLR 2024. Correlation between model scores and the average human rating, per prompt. Dots are estimates, lines are 95\% confidence intervals, the dashed line marks zero, and the gray band shows the range for one human reviewer against the others.}
 \label{fig:agreement}
 \end{figure}
 
-\subsection{Does averaging the prompts help?}
-Averaging the scores from all four prompts gives results about as good as a typical single prompt, but not as good as the best one. Averaging is still the safer choice: you can only know which prompt is best after comparing against human ratings, and with a different set of papers a different prompt might come out on top.
+\subsection{What do the models reward?}
+\label{sec:tracks}
 
-\textbf{In short:} the models are fairly consistent with themselves but not with humans. Whatever they are using to rank papers, it is mostly not what human reviewers judge as quality.
+\begin{table}[!htbp]
+\centering
+\input{tables/tracks}
+\caption{Spearman correlation of each model's score (average of the four prompts) with the number of promotional words in the abstract and with abstract length. Last row: the same correlations for the average human rating.}
+\label{tab:tracks}
+\end{table}
+
+The prompts mostly agree with each other but only partly with humans, so the models must be ranking papers by something else. One clear signal is promotional language. Every model gives higher scores to abstracts that contain more words like ``novel'', ``state-of-the-art'', and ``significantly'' (correlations of 0.27 to 0.39 in both years), while the human ratings are unrelated to these words (0.08 in 2024, $-0.04$ in 2025; Table~\ref{tab:tracks}). The models are, in part, rewarding how a paper sells itself.
+
+\begin{table}[!htbp]
+\centering
+\input{tables/baselines}
+\caption{How well simple, non-LLM predictors separate accepted from rejected papers, compared with each model (AUC; 0.5 = coin flip). The word-count classifier is trained and tested with 5-fold cross-validation, repeated 10 times; brackets show the range over repeats. Other brackets: 95\% confidence intervals.}
+\label{tab:baselines}
+\end{table}
+
+Simple baselines put the models' accuracy in context (Table~\ref{tab:baselines}). Abstract length and the count of promotional words are no better than a coin flip at predicting acceptance. A plain word-count classifier trained on just 160 abstracts per fold reaches an AUC of 0.54 on ICLR 2024 and 0.63 on ICLR 2025, On ICLR 2025 that is about as good as the best LLM (0.62 for the average of Qwen2.5-7B's prompts), although on ICLR 2024 the 3B and 7B models do better than the classifier. On papers the models have not seen, much of what a small LLM reviewer gets right can also be found by counting words.
 
 % =====================================================================
 \section{Limitations}
-This is a small pilot study, and the results should be read with that in mind.
 \begin{itemize}
-  \item Only 60 papers, from one conference and one year, and only one family of models.
-  \item The models saw only the title and abstract, not the full paper.
-  \item ICLR 2024 papers and reviews may have been part of the models' training data.
-  \item Human reviewers can only choose 1, 3, 5, 6, 8, or 10, while the finer model score can take any value, so some comparisons are approximate.
-  \item With this many comparisons and only 60 papers, small differences between prompts or models may be due to chance.
+  \item 200 papers per year from one conference, and two model families of small size. Larger and commercial models may behave differently.
+  \item The models saw only the title and abstract, not the full paper. Human reviewers read the full paper, so the comparison favors the humans.
+  \item The 2024--2025 comparison is suggestive, not a controlled test of contamination: the years differ in topics, reviewers, and acceptance rates.
+  \item Human ratings use a discrete scale (1, 3, 5, 6, 8, 10) while expected scores are continuous.
+  \item The list of promotional words is short and hand-picked (Appendix~\ref{app:details}); a correlation with it does not show that promotional language \emph{causes} the higher scores.
+  \item Several analysis choices were made after seeing earlier results; they are listed in Appendix~\ref{app:history}.
 \end{itemize}
 
 % =====================================================================
 \section{Conclusion}
-Small open LLMs asked to review papers accept nearly everything, change a noticeable share of their verdicts when the prompt is reworded, and agree only weakly with human reviewers, although bigger models do somewhat better. Anyone using such a model as a reviewer should not rely on a single prompt: test several prompts that mean the same thing, and check the scores against human judgments before trusting them. Natural next steps are larger models, full papers instead of abstracts, other kinds of irrelevant changes (such as section order or length), and methods that make scores comparable across prompts.
+Small open LLMs asked to review papers accept nearly everything, change a quarter to over a third of their verdicts when the prompt is reworded, and reward promotional language that human reviewers ignore. The largest model tested reaches about three-quarters of a single human reviewer's agreement on ICLR 2024, but less on ICLR 2025, which it cannot have seen in training. Anyone using such a model as a reviewer should not rely on one prompt: test several prompts that mean the same thing, compare against human ratings on data the model has not seen, and check whether a simple baseline does just as well. Natural next steps are larger models, full papers instead of abstracts, other irrelevant changes such as section order or length, and a controlled test of whether rewriting an abstract to remove promotional words lowers the score.
 
 \section*{Code and Data}
-All code, prompts, model outputs, and analysis are available at \fillme{GitHub URL}.
+All code, prompts, model outputs (including the probability of every score), and analysis are available at \fillme{public GitHub URL, once the repository is made public}.
 
 \section*{Acknowledgments}
 I used an AI assistant (Claude, by Anthropic) to help write code, run analyses, and draft and edit the text. I reviewed all of the content and take full responsibility for it.
@@ -259,16 +268,41 @@ Format: a single integer.\par
 \section{Technical Details}
 \label{app:details}
 
-\textbf{Running the models.} The models are the instruction-tuned versions (\texttt{Qwen2.5-\{1.5B,\allowbreak 3B,\allowbreak 7B\}-\allowbreak Instruct}), run in 16-bit precision with deterministic (greedy) decoding and at most 8 new tokens. Every response contained a usable number.
+{\sloppy \textbf{Data versions.} \texttt{smallari/\allowbreak openreview-\allowbreak iclr2024-\allowbreak peer-\allowbreak reviews-\allowbreak RAW} at commit \texttt{259c437}, and \texttt{smallari/\allowbreak openreview-\allowbreak iclr2025-\allowbreak peer-\allowbreak reviews-\allowbreak RAW} at commit \texttt{94e63f9}. The dataset cards do not state a license; the reviews themselves are publicly posted on OpenReview. The IDs of all 400 papers are listed in the repository (\texttt{data/paper\_ids.txt}).\par}
 
-\textbf{Finer score.} The finer score is the expected value of the model's answer,
+\textbf{Models.} Qwen2.5-1.5B/3B/7B-Instruct (Hugging Face commits \texttt{989aa79}, \texttt{aa8e725}, \texttt{a09a354}) and Phi-3.5-mini-instruct (commit \texttt{2fe1924}), run in 16-bit floating point with greedy decoding and at most 8 new tokens, using PyTorch 2.11 and Transformers 5.16 on two NVIDIA T4 GPUs. Each prompt is wrapped in the model's own chat template with no system message. For Qwen, the template then inserts its default system prompt (``You are Qwen, created by Alibaba Cloud. You are a helpful assistant.''); Phi's template adds none. All runs fit within Kaggle's free weekly GPU allowance; the final run, which re-scored Phi-3.5-mini and recomputed every analysis, took 26 minutes.
+
+\textbf{Expected score.} The expected score is
 \[
   \hat{s} = \sum_{s=1}^{10} s \cdot P(s \mid \text{prompt}),
 \]
-using the model's probabilities for its first output token, renormalized over the answers 1 to 10. Qwen writes numbers one digit at a time, so a first token of ``1'' could mean 1 or 10; I split it using the probability that the next token is ``0''. On average the models put at least 98\% of their probability on a numeric answer.
+using the model's probabilities for the first token of its answer, renormalized over the answers 1 to 10. Two tokenizer details matter. Both model families write numbers one digit at a time, so a first digit ``1'' could mean 1 or 10; I split it using the probability that the next token is ``0''. Phi's tokenizer also writes a space token before the digit, so for Phi the digit probabilities are read after that space token. The probability that the model's answer is a number at all is at least 98\% for every model, so the expected score reflects what the models would actually say. When a model wrote 10, its expected-score distribution put on average 77\% of its probability on 10, which supports the 1-versus-10 split.
 
-\textbf{Consistency measures.} Verdicts use the top 31\% of papers (19 of 60) under each prompt. With four prompts that ranked papers independently at random, the share of papers that flip would be $1 - 0.31^4 - 0.69^4 \approx 76\%$. The average change in a paper's finer score across prompts (standard deviation) was 0.19, 0.34, and 0.24 for the 1.5B, 3B, and 7B models; the lowest agreement between any two prompts' rankings was 0.65, 0.66, and 0.70.
+\textbf{Promotional words.} novel, state-of-the-art, state of the art, SOTA, significantly, significant, outperform(s), superior, remarkable, unprecedented, groundbreaking, first, breakthrough, substantially, dramatically, promising, effective, efficient, robust.
 
-\textbf{Statistics.} Correlations are Spearman rank correlations. Confidence intervals come from bootstrapping: resampling the 60 papers with replacement 1,000 times and taking the middle 95\% of results.
+\textbf{Statistics.} Correlations are Spearman rank correlations. Confidence intervals come from 1,000 bootstrap resamples of the papers. Significance uses two-sided permutation tests (2,000 permutations) with the Holm correction across all agreement tests in a year.
+
+\section{Pairwise Flip Rates}
+\label{app:pairwise}
+Share of papers that flip between accept and reject for each pair of prompts, when each prompt accepts its top half (random rankings would give 50\%).
+
+\begin{table}[!htbp]
+\centering
+\small
+\input{tables/pairwise}
+\caption{Pairwise verdict flip rates. Columns name the two prompts compared.}
+\label{tab:pairwise}
+\end{table}
+
+\section{Development History}
+\label{app:history}
+This study went through several versions, and some choices were made after seeing earlier results. For transparency:
+\begin{itemize}
+  \item A first pilot used 60 ICLR 2024 papers, two models, and written scores only. Because the written scores were almost all 8, I added the expected score.
+  \item In the pilot, 7 of the 30 ``rejected'' papers actually had no decision (they were withdrawn or desk-rejected). The final version counts only explicit rejections.
+  \item After feedback, I changed the main verdict cutoff from ICLR's real acceptance rate (31\%) to 50\% to match the balanced sample, increased the sample to 200 papers per year, and added a second model family, the ICLR 2025 contamination check, the human ceiling, and the text baselines.
+  \item Qwen2.5-7B crashed twice on the same ICLR 2025 paper when prompts were scored in batches of four. Scoring one prompt at a time avoided the crash. As a result, all 7B scores for ICLR 2024 and the first 152 for ICLR 2025 were computed in batches of four, and the rest one at a time.
+  \item The first full run read Phi's digit probabilities one token too early, before its space token; a sanity check (almost no probability on numbers) caught this, and Phi was re-scored with the fix. Qwen results were unaffected.
+\end{itemize}
 
 \end{document}
