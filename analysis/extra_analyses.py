@@ -1,13 +1,15 @@
-"""Follow-up analyses that need no GPU (run locally after the Kaggle run).
+"""Follow-up checks that came out of feedback on the draft. None of them need a GPU.
 
-1. Hype words vs. length: correlation of model scores with hype words per 100 words, and a partial
-   rank correlation with the hype-word count controlling for abstract length.
-2. Averaging prompts: spread of each prompt's expected scores, and a rank-average alternative.
-3. Batching check: Qwen2.5-7B expected scores computed in batches of 4 vs. one prompt at a time.
-4. Power under the Holm correction.
+1. Hype words vs. length. Longer abstracts could just contain more hype words, so I check the hype result
+   two ways: hype words per 100 words, and the hype-word count with length controlled for.
+2. Averaging prompts. Phi's average looked worse than its single prompts. This shows how much each prompt
+   spreads out, and tries averaging ranks instead of raw scores.
+3. Batching. The 7B was first scored in batches of 4, then re-scored one prompt at a time. This measures how
+   much the two ways differ (pass the old batched scores file as an argument).
+4. Power. How likely a real effect is to show up once the Holm correction is applied.
 
-Usage:  python scripts/extra_analyses.py [old_batched_scores.csv]
-Writes results/extra_v3.json.
+Usage:  python analysis/extra_analyses.py [old_batched_scores.csv]
+Writes results/extra_analyses.json.
 """
 import json
 import re
@@ -25,7 +27,7 @@ HYPE = ["novel", "state-of-the-art", "state of the art", "sota", "significantly"
 PROMPTS = ["P1_expert", "P2_plain", "P3_after", "P4_terse"]
 SEVEN_B = "Qwen/Qwen2.5-7B-Instruct"
 
-scores = pd.read_csv(ROOT / "results/scores_v3.csv")
+scores = pd.read_csv(ROOT / "results/scores.csv")
 out = {"hype": {}, "averaging": {}, "power": {}}
 
 
@@ -37,7 +39,7 @@ def partial_spearman(x, y, z):
 
 
 for year in (2024, 2025):
-    papers = pd.read_csv(ROOT / f"data/papers_{year}.csv")
+    papers = pd.read_csv(ROOT / f"data/iclr{year}_sample.csv")
     ab = papers["abstract"].fillna("").str.lower()
     words = ab.str.split().str.len().values.astype(float)
     hype = ab.apply(lambda t: sum(len(re.findall(r"\b" + re.escape(h) + r"\b", t)) for h in HYPE)).values.astype(float)
@@ -86,5 +88,5 @@ if len(sys.argv) > 1:
                           "spearman_b4_vs_b1": float(spearmanr(m["exp_score_b4"], m["exp_score_b1"])[0]),
                           "written_score_agreement": float((m["score_b4"] == m["score_b1"]).mean())}
 
-(ROOT / "results/extra_v3.json").write_text(json.dumps(out, indent=1, default=float), encoding="utf-8")
+(ROOT / "results/extra_analyses.json").write_text(json.dumps(out, indent=1, default=float), encoding="utf-8")
 print(json.dumps(out, indent=1, default=float)[:4000])

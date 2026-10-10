@@ -1,53 +1,65 @@
-# Can Small Language Models Review Research Papers?
+# can small language models review research papers?
 
-A study of small open LLMs as paper reviewers, using ICLR submissions and their public human reviews.
+I wanted to know when you can actually trust what a machine tells you, and paper reviewing felt like a good place to test it. LLMs are already being used to judge research (The AI Scientist uses one to decide which of its own papers are good). So I asked a simple question: if a small, free model that a student can run reads a paper's title and abstract, does its verdict depend on the paper, or on how I phrase the question?
 
-**Question.** If a small LLM rates the same paper with prompts that mean the same thing, does it give the same verdict — and does that verdict agree with human reviewers?
+**Paper:** [`paper/paper.pdf`](paper/paper.pdf)
+**Author:** Pawan Chaudhary, Dakota State University
 
-**Author:** Pawan Chaudhary (Dakota State University) · **Paper:** [`paper/paper-v3.pdf`](paper/paper-v3.pdf)
+## what i did
 
-## Status
+- took **400 ICLR papers**: 200 from 2024 and 200 from 2025, half accepted and half rejected, with their real public reviews
+- had **four small open models** (Qwen2.5 1.5B, 3B, 7B and Phi-3.5-mini) score each one from 1 to 10
+- used **four prompts** that ask the exact same question in different words
+- compared the models with the real human reviewers, with each other, and with some very simple baselines
 
-| Version | What | Where |
-|---|---|---|
-| v1 | Pilot: 60 ICLR 2024 papers, Qwen2.5 1.5B/3B, written (greedy) scores. Found that scores collapse onto 8. | `runs/v1_greedy_only.ipynb` |
-| v2 | Adds probability-weighted (expected) scores, Qwen2.5-7B, bootstrap CIs. | `notebooks/pilot.ipynb`, `runs/v2_expected_score.ipynb`, `results/` |
-| v3 (final) | Fixes a data bug (withdrawn papers had been counted as rejected); 200 papers per year from ICLR 2024 and 2025; adds Phi-3.5-mini, a contamination check, a human ceiling, text baselines, Holm correction, power analysis. | `notebooks/study_v3.ipynb`, `results/*_v3.*`, `paper/paper-v3.pdf` |
+The 2025 papers are my contamination check. Their reviews and decisions came out after these models were trained, so the models can't have memorized them.
 
-## Main results (v3)
-- **Too generous:** every model gives a score of 6 or more ("marginally above the acceptance threshold") to 99–100% of papers, although half were rejected.
-- **Wording matters:** when each prompt accepts its top half, 24–38% of papers are accepted under one wording and rejected under another (random rankings: 88%).
-- **Human ceiling:** on ICLR 2024, Qwen2.5-7B correlates 0.33 with the other reviewers' average, against 0.43 for a single human reviewer. On ICLR 2025 (after the models' training), it falls to 0.28 against 0.52, and the smaller models to near zero.
-- **Rewarding hype:** model scores rise with promotional words such as "novel" and "state-of-the-art" (ρ 0.27–0.39); human ratings do not (ρ ≈ 0).
-- **Baselines:** a simple TF-IDF classifier matches the best model on ICLR 2025 (AUC 0.63 vs 0.62).
+## what i found
 
-Full tables: `results/tables_v3.md`. Paper tables are generated from `results/metrics_v3.json` by `scripts/make_tables.py`.
+- **They accept almost everything.** Every model gave a passing score (6 or more) to 99–100% of papers, even though half were rejected.
+- **The wording changes the verdict.** When each prompt "accepts" its top half, 24–38% of papers are accepted under one wording and rejected under another. (Random rankings would flip 88%, so it isn't random, but it's a lot.)
+- **The best model gets part of the way to a human reviewer.** On 2024 papers, Qwen2.5-7B agrees with the other reviewers about three-quarters as well as one human reviewer does (0.33 vs 0.43). On 2025 papers it drops to 0.28 vs 0.52, and the smaller models drop to almost nothing. Part of the 2024 result might come from the models having seen those papers. I can't prove it, but it's the obvious suspect.
+- **They reward hype.** Scores go up with words like "novel" and "state-of-the-art". Human ratings don't move at all with those words, and this isn't just longer abstracts having more of them.
+- **Counting words does about as well.** On the 2025 papers, a basic word-count classifier separates accepted from rejected papers about as well as the best model.
 
-## Setup
-- **Data:** ICLR 2024 / 2025 submissions with decisions and reviews, from public OpenReview mirrors on Hugging Face (`smallari/openreview-iclr2024-peer-reviews-RAW`, `smallari/openreview-iclr2025-peer-reviews-RAW`), pinned to fixed commits.
-- **Models:** Qwen2.5-{1.5B, 3B, 7B}-Instruct and Phi-3.5-mini-instruct, fp16, greedy decoding.
-- **Prompts:** four meaning-preserving prompts asking for a 1–10 score from the title and abstract (full text in the paper's appendix).
-- **Scores:** the written score, and an expected score Σ s·P(s) from the model's next-token probabilities.
+The full tables are in [`results/summary_tables.md`](results/summary_tables.md).
 
-## Reproduce
-1. On [Kaggle](https://www.kaggle.com/code): New Notebook → File → Import Notebook → `notebooks/study_v3.ipynb`.
-2. Session options: Accelerator **GPU T4 x2**, Internet **On**.
-3. Save Version → Save & Run All. Outputs appear under `data/` and `results/`. (The notebook also runs on Google Colab with a T4 GPU.)
-4. Locally: `python scripts/make_tables.py` regenerates the paper's tables; compile `paper/overleaf/main.tex` with pdflatex + bibtex.
+## what went wrong along the way
 
-## Paper
-LaTeX source is in `paper/overleaf/`. Every push rebuilds the PDF with GitHub Actions (see the *Build paper* workflow); tagged versions attach the PDF to a release.
+I'm keeping these here because they changed the results, and I'd rather be upfront about them:
 
-## Repository layout
+- my first version used the number the model writes, which was "8" almost every time. I switched to a probability-weighted score.
+- in the pilot I counted withdrawn papers as rejected (7 out of 30). Only papers marked exactly "Reject" count now.
+- the 7B model crashed twice on the same paper when I scored prompts in batches of four. It now scores one prompt at a time.
+- Phi writes a space before each digit, and my first full run read its probabilities one step too early. A sanity check caught it, and Phi was re-scored.
+
+The earlier pilot is in [`pilot/`](pilot/), with its own notes.
+
+## what's where
+
 ```
-notebooks/        Kaggle notebooks (pilot v2, full study v3)
-runs/             executed notebooks from earlier runs, kept as a record
-data/             sampled papers with human ratings
-results/          scores, metrics, tables, figures
-paper/overleaf/   LaTeX source, bibliography, figures
-paper/            writing notes
-scripts/          checks run in CI
+notebooks/run_study.ipynb      the whole study, start to finish (runs on Kaggle or Colab)
+analysis/                      small scripts that run on a normal laptop
+  make_paper_tables.py           builds the paper's tables from the results, so nothing is typed by hand
+  extra_analyses.py              follow-up checks (hype vs. length, averaging, batching, power)
+  check_outputs.py               sanity checks that run on every push
+data/                          the 400 sampled papers with their human ratings, plus all paper IDs
+results/                       model scores (with every probability), metrics, tables, figures
+paper/paper.pdf                the paper
+paper/latex/                   LaTeX source, references, figures, generated tables
+pilot/                         the first, smaller version of the study
+notes/                         my writing notes and the revision checklist
 ```
 
-## AI assistance
-Code, analysis, and text were developed with help from an AI assistant (Claude, Anthropic). All content was reviewed by the author.
+## how to rerun it
+
+1. Upload `notebooks/run_study.ipynb` to [Kaggle](https://www.kaggle.com/code) (New Notebook → File → Import Notebook).
+2. Set Accelerator to **GPU T4 x2** and turn Internet **On**.
+3. Save Version → Save & Run All. It takes about an hour on Kaggle's free GPUs.
+4. On a laptop, with the outputs in place: `python analysis/extra_analyses.py`, then `python analysis/make_paper_tables.py`, then compile `paper/latex/main.tex`.
+
+Models and datasets are pinned to exact versions, and the sampling is seeded, so the same papers and scores come out every time.
+
+## being honest about help
+
+I used an AI assistant (Claude, by Anthropic) for code, running analyses, and drafting and editing. The questions, the decisions, and the responsibility for every claim are mine, and I've gone through all of it.

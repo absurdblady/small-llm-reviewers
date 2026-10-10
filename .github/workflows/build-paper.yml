@@ -1,3 +1,5 @@
+# Runs on every push: first checks that the results files look right, then builds the paper PDF.
+# When I tag a version (like v1.0), the PDF also gets attached to a GitHub release.
 name: Build paper
 
 on:
@@ -19,7 +21,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python scripts/check_outputs.py
+      - run: python analysis/check_outputs.py
 
   paper:
     name: Compile LaTeX
@@ -30,13 +32,13 @@ jobs:
       - uses: xu-cheng/latex-action@v3
         with:
           root_file: main.tex
-          working_directory: paper/overleaf
+          working_directory: paper/latex
       - uses: actions/upload-artifact@v4
         with:
           name: paper-pdf
-          path: paper/overleaf/main.pdf
+          path: paper/latex/main.pdf
       - name: Attach PDF to release (tagged versions only)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: paper/overleaf/main.pdf
+          files: paper/latex/main.pdf

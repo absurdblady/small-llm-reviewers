@@ -1,13 +1,17 @@
-"""Build the paper's LaTeX tables from results/metrics_v3.json, so no number is typed by hand.
+"""Turns the results into the LaTeX tables the paper uses.
 
-Usage:  python scripts/make_tables.py            (writes paper/overleaf/tables/*.tex)
+I typed numbers into the paper by hand in the early drafts, and it is too easy to copy one wrong. So now every
+table in the paper is built straight from results/metrics.json and results/extra_analyses.json. If the results
+change, I rerun this and the tables follow.
+
+Usage:  python analysis/make_paper_tables.py      (writes paper/latex/tables/*.tex)
 """
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-M = json.loads((ROOT / "results/metrics_v3.json").read_text(encoding="utf-8"))
-OUT = ROOT / "paper/overleaf/tables"
+M = json.loads((ROOT / "results/metrics.json").read_text(encoding="utf-8"))
+OUT = ROOT / "paper/latex/tables"
 OUT.mkdir(parents=True, exist_ok=True)
 
 ORDER = ["Qwen/Qwen2.5-1.5B-Instruct", "Qwen/Qwen2.5-3B-Instruct", "Qwen/Qwen2.5-7B-Instruct",
@@ -120,7 +124,7 @@ write("baselines", r"""\begin{tabular}{lcc}
 """ + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 # Table: what scores track -- hype rate, and hype count controlling for length (from extra_analyses.py)
-X = json.loads((ROOT / "results/extra_v3.json").read_text(encoding="utf-8"))
+X = json.loads((ROOT / "results/extra_analyses.json").read_text(encoding="utf-8"))
 rows = []
 for m in ORDER:
     cells = [NAME[m]]
