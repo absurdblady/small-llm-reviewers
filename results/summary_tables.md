@@ -7,7 +7,7 @@
 | Qwen2.5-1.5B | 8 (76%) | 100% | 0.80 (0.67) | 37% [29%, 44%] (88%) | 33% [26%, 39%] (76%) | 0.32 [0.29, 0.35] |
 | Qwen2.5-3B | 8 (92%) | 100% | 0.79 (0.71) | 34% [28%, 42%] (88%) | 29% [24%, 36%] (76%) | 0.74 [0.67, 0.81] |
 | Phi-3.5-mini | 9 (84%) | 99% | 0.86 (0.76) | 28% [22%, 35%] (88%) | 28% [22%, 35%] (76%) | 0.43 [0.38, 0.50] |
-| Qwen2.5-7B | 8 (72%) | 100% | 0.80 (0.68) | 36% [30%, 44%] (88%) | 26% [21%, 34%] (76%) | 0.57 [0.54, 0.61] |
+| Qwen2.5-7B | 8 (73%) | 100% | 0.80 (0.68) | 36% [30%, 44%] (88%) | 26% [21%, 34%] (76%) | 0.57 [0.54, 0.61] |
 
 **Table B. Pairwise flip rates @50% (random = 50%)**
 
@@ -16,7 +16,7 @@
 | Qwen2.5-1.5B | 16% | 22% | 12% | 27% | 15% | 25% |
 | Qwen2.5-3B | 17% | 23% | 12% | 19% | 18% | 27% |
 | Phi-3.5-mini | 11% | 19% | 10% | 17% | 13% | 19% |
-| Qwen2.5-7B | 14% | 21% | 18% | 22% | 19% | 23% |
+| Qwen2.5-7B | 14% | 21% | 18% | 22% | 19% | 24% |
 
 **Table C. Agreement with humans** (Spearman vs mean human rating; AUC accepted vs rejected; 95% CI; * = significant after Holm correction)
 
@@ -41,9 +41,9 @@ Human ceiling (one reviewer vs mean of the others): Spearman 0.43 [0.35, 0.51]
 | Phi-3.5-mini | average | 0.16 [0.03, 0.28] | 0.57 [0.49, 0.65] |
 | Qwen2.5-7B | P1_expert | 0.35 [0.22, 0.46]* | 0.67 [0.59, 0.74]* |
 | Qwen2.5-7B | P2_plain | 0.32 [0.19, 0.43]* | 0.65 [0.57, 0.72]* |
-| Qwen2.5-7B | P3_after | 0.26 [0.13, 0.39]* | 0.63 [0.56, 0.70] |
+| Qwen2.5-7B | P3_after | 0.26 [0.13, 0.39]* | 0.63 [0.55, 0.70] |
 | Qwen2.5-7B | P4_terse | 0.33 [0.21, 0.45]* | 0.66 [0.58, 0.72]* |
-| Qwen2.5-7B | average | 0.34 [0.22, 0.46]* | 0.67 [0.58, 0.74]* |
+| Qwen2.5-7B | average | 0.34 [0.22, 0.46]* | 0.67 [0.59, 0.74]* |
 
 **Table D. Same comparison as the human ceiling** (vs mean of the *other* reviewers, prompt-averaged score)
 
@@ -115,11 +115,11 @@ Human ceiling (one reviewer vs mean of the others): Spearman 0.52 [0.45, 0.59]
 | Phi-3.5-mini | P3_after | -0.00 [-0.14, 0.12] | 0.50 [0.42, 0.57] |
 | Phi-3.5-mini | P4_terse | 0.13 [-0.02, 0.25] | 0.57 [0.49, 0.65] |
 | Phi-3.5-mini | average | 0.04 [-0.10, 0.17] | 0.52 [0.45, 0.60] |
-| Qwen2.5-7B | P1_expert | 0.25 [0.12, 0.38]* | 0.61 [0.53, 0.68] |
+| Qwen2.5-7B | P1_expert | 0.26 [0.12, 0.38]* | 0.61 [0.53, 0.68] |
 | Qwen2.5-7B | P2_plain | 0.30 [0.15, 0.43]* | 0.64 [0.57, 0.71]* |
 | Qwen2.5-7B | P3_after | 0.16 [0.02, 0.30] | 0.54 [0.47, 0.63] |
-| Qwen2.5-7B | P4_terse | 0.35 [0.22, 0.47]* | 0.67 [0.60, 0.75]* |
-| Qwen2.5-7B | average | 0.28 [0.15, 0.42]* | 0.62 [0.54, 0.70] |
+| Qwen2.5-7B | P4_terse | 0.35 [0.22, 0.47]* | 0.67 [0.61, 0.75]* |
+| Qwen2.5-7B | average | 0.29 [0.15, 0.42]* | 0.62 [0.54, 0.70] |
 
 **Table D. Same comparison as the human ceiling** (vs mean of the *other* reviewers, prompt-averaged score)
 
@@ -168,50 +168,48 @@ Power: with n = 200, power to detect r = 0.2 is 81%, r = 0.3 is 99%. 80% power n
    "revision": "aa8e72537993ba99e69dfaafa59ed015b17504d1"
   },
   "microsoft/Phi-3.5-mini-instruct": {
-   "revision": "2fe192450127e6a83f7441aef6e3ca586c338b77",
+   "revision": "2fe192450127e6a83f7441aef6e3ca586c338b77"
+  },
+  "Qwen/Qwen2.5-7B-Instruct": {
+   "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
    "answer_first_token_ids": {
     "1": [
-     29896
+     16
     ],
     "2": [
-     29906
+     17
     ],
     "3": [
-     29941
+     18
     ],
     "4": [
-     29946
+     19
     ],
     "5": [
-     29945
+     20
     ],
     "6": [
-     29953
+     21
     ],
     "7": [
-     29955
+     22
     ],
     "8": [
-     29947
+     23
     ],
     "9": [
-     29929
+     24
     ]
    },
    "ten_tokens": [
-    29896,
-    29900
+    16,
+    15
    ],
-   "answer_prefix_tokens": [
-    29871
-   ],
-   "minutes": 20.7
-  },
-  "Qwen/Qwen2.5-7B-Instruct": {
-   "revision": "a09a35458c702b33eeacc393d103063234e8bc28"
+   "answer_prefix_tokens": [],
+   "minutes": 34.6
   }
  },
- "total_minutes": 25.8
+ "total_minutes": 39.7
 }
 ```
 

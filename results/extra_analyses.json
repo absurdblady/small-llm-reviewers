@@ -21,10 +21,10 @@
      "length": 0.12633843466939684
     },
     "Qwen/Qwen2.5-7B-Instruct": {
-     "hype_count": 0.26737274179541354,
-     "hype_rate": 0.23570808718387987,
-     "hype_count_partial_length": 0.2632676290870853,
-     "length": 0.12537232428743744
+     "hype_count": 0.26760316294604314,
+     "hype_rate": 0.23596419774430075,
+     "hype_count_partial_length": 0.2635043823198295,
+     "length": 0.12515329926295599
     },
     "microsoft/Phi-3.5-mini-instruct": {
      "hype_count": 0.3509543779721496,
@@ -55,10 +55,10 @@
      "length": 0.08087457943292578
     },
     "Qwen/Qwen2.5-7B-Instruct": {
-     "hype_count": 0.3098705595715451,
-     "hype_rate": 0.2678254873908194,
-     "hype_count_partial_length": 0.3101330929382378,
-     "length": 0.10527054036942274
+     "hype_count": 0.3100972590774675,
+     "hype_rate": 0.26788477884160383,
+     "hype_count_partial_length": 0.3103609692687618,
+     "length": 0.10526453982561051
     },
     "microsoft/Phi-3.5-mini-instruct": {
      "hype_count": 0.39239225361892455,
@@ -129,30 +129,30 @@
    },
    "Qwen/Qwen2.5-7B-Instruct": {
     "prompt_sd": {
-     "P1_expert": 0.286,
+     "P1_expert": 0.285,
      "P2_plain": 0.31,
      "P3_after": 0.297,
-     "P4_terse": 0.271
+     "P4_terse": 0.273
     },
     "prompt_mean": {
-     "P1_expert": 8.334,
-     "P2_plain": 8.442,
+     "P1_expert": 8.332,
+     "P2_plain": 8.441,
      "P3_after": 8.307,
      "P4_terse": 7.869
     },
     "share_of_average_variance_from_each_prompt": {
-     "P1_expert": 0.253,
+     "P1_expert": 0.252,
      "P2_plain": 0.277,
      "P3_after": 0.253,
-     "P4_terse": 0.217
+     "P4_terse": 0.218
     },
-    "spearman_score_average": 0.3438562718865461,
-    "spearman_rank_average": 0.34289244024819865,
+    "spearman_score_average": 0.34446807700289794,
+    "spearman_rank_average": 0.34181805498401946,
     "spearman_per_prompt": {
-     "P1_expert": 0.3473437113704194,
-     "P2_plain": 0.3178936378151162,
-     "P3_after": 0.25547598708715485,
-     "P4_terse": 0.33307226720667243
+     "P1_expert": 0.34547221906118564,
+     "P2_plain": 0.31643853375460357,
+     "P3_after": 0.2561306335937182,
+     "P4_terse": 0.33381635451034364
     }
    },
    "microsoft/Phi-3.5-mini-instruct": {
@@ -250,7 +250,7 @@
     },
     "prompt_mean": {
      "P1_expert": 8.363,
-     "P2_plain": 8.454,
+     "P2_plain": 8.453,
      "P3_after": 8.352,
      "P4_terse": 7.884
     },
@@ -260,13 +260,13 @@
      "P3_after": 0.227,
      "P4_terse": 0.228
     },
-    "spearman_score_average": 0.2843833824557635,
-    "spearman_rank_average": 0.2867307244437617,
+    "spearman_score_average": 0.28512382728747826,
+    "spearman_rank_average": 0.28602647863647174,
     "spearman_per_prompt": {
-     "P1_expert": 0.2548429378866328,
-     "P2_plain": 0.2960442621178999,
-     "P3_after": 0.16004572355447202,
-     "P4_terse": 0.3510346816837979
+     "P1_expert": 0.2551027694401554,
+     "P2_plain": 0.2955628978814606,
+     "P3_after": 0.15947574624486605,
+     "P4_terse": 0.3517090421897613
     }
    },
    "microsoft/Phi-3.5-mini-instruct": {
@@ -308,5 +308,13 @@
    "uncorrected": 0.991445355295177,
    "holm_strictest_40_tests": 0.8680234110995326
   }
+ },
+ "batching_7b": {
+  "n_overlap": 952,
+  "mean_abs_diff": 0.0025270421329082232,
+  "max_abs_diff": 0.02500197697733686,
+  "share_diff_below_0.01": 0.9863445378151261,
+  "spearman_b4_vs_b1": 0.9999216551179013,
+  "written_score_agreement": 0.9978991596638656
  }
 }

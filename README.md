@@ -30,7 +30,7 @@ I'm keeping these here because they changed the results, and I'd rather be upfro
 
 - my first version used the number the model writes, which was "8" almost every time. I switched to a probability-weighted score.
 - in the pilot I counted withdrawn papers as rejected (7 out of 30). Only papers marked exactly "Reject" count now.
-- the 7B model crashed twice on the same paper when I scored prompts in batches of four. It now scores one prompt at a time.
+- the 7B model crashed twice on the same paper when I scored prompts in batches of four. I re-scored all of it one prompt at a time, then checked whether batching had changed anything: on the 952 prompts scored both ways, the scores differ by 0.003 points on average. So the crash was the real problem, not the numbers.
 - Phi writes a space before each digit, and my first full run read its probabilities one step too early. A sanity check caught it, and Phi was re-scored.
 
 The earlier pilot is in [`pilot/`](pilot/), with its own notes.
