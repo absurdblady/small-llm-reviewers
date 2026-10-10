@@ -119,24 +119,27 @@ write("baselines", r"""\begin{tabular}{lcc}
 \midrule
 """ + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
+# Table: what scores track -- hype rate, and hype count controlling for length (from extra_analyses.py)
+X = json.loads((ROOT / "results/extra_v3.json").read_text(encoding="utf-8"))
 rows = []
 for m in ORDER:
     cells = [NAME[m]]
     for y in YEARS:
-        t = M["years"][y]["models"][m]["tracks"]
-        cells += [num(t["spearman_with_hype_words"]), num(t["spearman_with_abstract_length"])]
+        h = X["hype"][y]["models"][m]
+        cells += [num(h["hype_rate"]), num(h["hype_count_partial_length"]), num(h["length"])]
     rows.append(" & ".join(cells) + " \\\\")
 rows.append("\\midrule")
 cells = ["Human mean rating"]
 for y in YEARS:
-    b = M["years"][y]["baselines"]
-    cells += [num(b["hype_words"]["spearman_vs_human"]), num(b["abstract_length"]["spearman_vs_human"])]
+    h = X["hype"][y]["human"]
+    cells += [num(h["hype_rate"]), num(h["hype_count_partial_length"]),
+              num(M["years"][y]["baselines"]["abstract_length"]["spearman_vs_human"])]
 rows.append(" & ".join(cells) + " \\\\")
-write("tracks", r"""\begin{tabular}{lcccc}
+write("tracks", r"""\begin{tabular}{lcccccc}
 \toprule
- & \multicolumn{2}{c}{\textbf{ICLR 2024}} & \multicolumn{2}{c}{\textbf{ICLR 2025}} \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-5}
-\textbf{Correlation of \ldots\ with} & \textbf{hype words} & \textbf{length} & \textbf{hype words} & \textbf{length} \\
+ & \multicolumn{3}{c}{\textbf{ICLR 2024}} & \multicolumn{3}{c}{\textbf{ICLR 2025}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+\textbf{Correlation of \ldots\ with} & \textbf{hype rate} & \textbf{hype $|$ length} & \textbf{length} & \textbf{hype rate} & \textbf{hype $|$ length} & \textbf{length} \\
 \midrule
 """ + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
