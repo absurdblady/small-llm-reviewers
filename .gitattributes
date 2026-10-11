@@ -1,0 +1,5 @@
+# keep line endings consistent across Windows and Linux
+* text=auto eol=lf
+*.pdf binary
+*.png binary
+*.zip binary
