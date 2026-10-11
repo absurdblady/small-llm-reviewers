@@ -9,6 +9,11 @@ authors:
 version: 1.0.0
 date-released: 2026-10-11
 repository-code: "https://github.com/absurdblady/small-llm-reviewers"
+doi: 10.5281/zenodo.23299279
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23299280
+    description: "The archived v1.0 release on Zenodo."
 license: MIT
 abstract: >-
   Four small open language models (Qwen2.5 1.5B, 3B, 7B and Phi-3.5-mini) rate 400 ICLR 2024 and 2025

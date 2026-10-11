@@ -1,5 +1,7 @@
 # can small language models review research papers?
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23299279.svg)](https://doi.org/10.5281/zenodo.23299279)
+
 I wanted to know when you can actually trust what a machine tells you, and paper reviewing felt like a good place to test it. LLMs are already being used to judge research (The AI Scientist uses one to decide which of its own papers are good). So I asked a simple question: if a small, free model that a student can run reads a paper's title and abstract, does its verdict depend on the paper, or on how I phrase the question?
 
 **Paper:** [`paper/paper.pdf`](paper/paper.pdf)
@@ -66,7 +68,7 @@ Models and datasets are pinned to exact versions, and the sampling is seeded, so
 - **Paper, results, and figures** (`paper/`, `results/`): [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Use them freely, just credit the source.
 - **The ICLR titles, abstracts, and review ratings** in `data/` and in the scores files come from OpenReview. They belong to their authors and keep their original terms. I only redistribute them so the study can be checked.
 
-To cite this work, use the **"Cite this repository"** button on GitHub (it reads [`CITATION.cff`](CITATION.cff)).
+To cite this work, use the **"Cite this repository"** button on GitHub (it reads [`CITATION.cff`](CITATION.cff)). Every release is archived on Zenodo: [10.5281/zenodo.23299279](https://doi.org/10.5281/zenodo.23299279) always points to the latest version, and v1.0 itself is [10.5281/zenodo.23299280](https://doi.org/10.5281/zenodo.23299280). This is an archived preprint, not a peer-reviewed publication.
 
 ## being honest about help
 
