@@ -69,7 +69,3 @@ Models and datasets are pinned to exact versions, and the sampling is seeded, so
 - **The ICLR titles, abstracts, and review ratings** in `data/` and in the scores files come from OpenReview. They belong to their authors and keep their original terms. I only redistribute them so the study can be checked.
 
 To cite this work, use the **"Cite this repository"** button on GitHub (it reads [`CITATION.cff`](CITATION.cff)). Every release is archived on Zenodo: [10.5281/zenodo.23299279](https://doi.org/10.5281/zenodo.23299279) always points to the latest version, and v1.0 itself is [10.5281/zenodo.23299280](https://doi.org/10.5281/zenodo.23299280). This is an archived preprint, not a peer-reviewed publication.
-
-## being honest about help
-
-I used an AI assistant (Claude, by Anthropic) for code, running analyses, and drafting and editing. The questions, the decisions, and the responsibility for every claim are mine, and I've gone through all of it.
