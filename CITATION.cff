@@ -6,6 +6,7 @@ authors:
   - family-names: Chaudhary
     given-names: Pawan
     affiliation: Dakota State University
+    orcid: "https://orcid.org/0009-0009-1305-6154"
 version: 1.0.0
 date-released: 2026-10-11
 repository-code: "https://github.com/absurdblady/small-llm-reviewers"
