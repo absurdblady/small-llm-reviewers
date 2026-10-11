@@ -22,11 +22,14 @@
 
 % Boxes for the full prompt text (Appendix A)
 \usepackage[most]{tcolorbox}
-\newtcolorbox{promptbox}[1]{enhanced, breakable, before skip=0.8em, after skip=0.8em,
+\usepackage{fvextra}
+\newtcolorbox{promptbox}[1]{breakable, before skip=0.9em, after skip=0.9em,
   colback=gray!4, colframe=gray!45, boxrule=0.5pt, arc=2pt,
-  left=10pt, right=10pt, top=8pt, bottom=8pt,
-  colbacktitle=gray!14, coltitle=black, fonttitle=\bfseries\small, title={#1},
-  fontupper=\small\ttfamily\raggedright\frenchspacing, parbox=false, before upper={\setlength{\parskip}{0.7em}}}
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  colbacktitle=gray!14, coltitle=black, fonttitle=\small, title={#1}}
+% verbatim body: every character and line break is reproduced exactly; only {title}/{abstract} are colored
+\DefineVerbatimEnvironment{prompttext}{Verbatim}{commandchars=\\\{\}, fontsize=\small, breaklines,
+  breaksymbolleft={\tiny\textcolor{gray}{$\hookrightarrow$}}, breaksymbolindentleft=1.2em}
 \newcommand{\slot}[1]{\textcolor{blue!55!black}{\texttt{\{#1\}}}}
 
 % Anything in \fillme{...} still needs input (shows up red in the PDF).
@@ -244,34 +247,49 @@ I used an AI assistant (Claude, by Anthropic) to help write code, run analyses, 
 
 \section{Full Prompt Text}
 \label{app:prompts}
-Each prompt was sent to the model as a single user message, exactly as shown below, including line breaks. The highlighted \slot{title} and \slot{abstract} are replaced with the paper's title and abstract.
+Each prompt was sent to the model as a single user message, exactly as written below. Line breaks are the real ones; where a long line had to be wrapped to fit the page, the continuation starts with a small gray arrow ($\hookrightarrow$). The highlighted \slot{title} and \slot{abstract} are replaced with the paper's title and abstract.
 
-\begin{promptbox}{P1 (expert) \hfill\normalfont\small Reviewer role, instructions first}
-You are an expert reviewer for ICLR. Read the title and abstract below and rate the paper's overall quality on a scale from 1 (strong reject) to 10 (strong accept). Respond with a single integer only.\par
-Title: \slot{title}\par
+\begin{promptbox}{\textbf{P1 (expert)} \enspace reviewer role, instructions first}
+\begin{prompttext}
+You are an expert reviewer for ICLR. Read the title and abstract below and rate the paper's overall quality on a scale from 1 (strong reject) to 10 (strong accept). Respond with a single integer only.
+
+Title: \slot{title}
+
 Abstract: \slot{abstract}
+\end{prompttext}
 \end{promptbox}
 
-\begin{promptbox}{P2 (plain) \hfill\normalfont\small Plain description, no role}
-Below is a submission to the ICLR conference. As a reviewer, score it from 1 to 10, where 10 means a clear accept and 1 means a clear reject. Output just the number.\par
-Title: \slot{title}\\
+\begin{promptbox}{\textbf{P2 (plain)} \enspace plain description, no role}
+\begin{prompttext}
+Below is a submission to the ICLR conference. As a reviewer, score it from 1 to 10, where 10 means a clear accept and 1 means a clear reject. Output just the number.
+
+Title: \slot{title}
 Abstract: \slot{abstract}
+\end{prompttext}
 \end{promptbox}
 
-\begin{promptbox}{P3 (after) \hfill\normalfont\small Instructions after the paper}
-Title: \slot{title}\par
-Abstract: \slot{abstract}\par
+\begin{promptbox}{\textbf{P3 (after)} \enspace instructions after the paper}
+\begin{prompttext}
+Title: \slot{title}
+
+Abstract: \slot{abstract}
+
 You are reviewing this paper for ICLR, a top machine learning conference. On a 1-10 scale (1 = strong reject, 10 = strong accept), what score would you give? Reply with one integer and nothing else.
+\end{prompttext}
 \end{promptbox}
 
-\begin{promptbox}{P4 (terse) \hfill\normalfont\small Short, markdown headings}
-Rate this ICLR submission.\\
-Scale: 1 (definitely reject) to 10 (definitely accept).\\
-Format: a single integer.\par
-\#\#\# Title\\
-\slot{title}\par
-\#\#\# Abstract\\
+\begin{promptbox}{\textbf{P4 (terse)} \enspace short, markdown headings}
+\begin{prompttext}
+Rate this ICLR submission.
+Scale: 1 (definitely reject) to 10 (definitely accept).
+Format: a single integer.
+
+### Title
+\slot{title}
+
+### Abstract
 \slot{abstract}
+\end{prompttext}
 \end{promptbox}
 
 \section{Technical Details}
