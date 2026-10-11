@@ -233,7 +233,7 @@ Simple baselines put the models' accuracy in context (Table~\ref{tab:baselines})
 Small open LLMs asked to review papers accept nearly everything, change a quarter to over a third of their verdicts when the prompt is reworded, and reward promotional language that human reviewers ignore. The largest model tested reaches about three-quarters of a single human reviewer's agreement on ICLR 2024, but less on ICLR 2025, whose reviews and decisions it cannot have seen in training. Anyone using such a model as a reviewer should not rely on one prompt: test several prompts that mean the same thing, compare against human ratings on data the model has not seen, and check whether a simple baseline does just as well. Natural next steps are larger models, full papers instead of abstracts, other irrelevant changes such as section order or length, and a controlled test of whether rewriting an abstract to remove promotional words lowers the score.
 
 \section*{Code and Data}
-All code, prompts, model outputs (including the probability of every score), and analysis are available at \ifanonymous \fillme{anonymized repository link}\else \fillme{public GitHub URL, once the repository is made public}\fi.
+All code, prompts, model outputs (including the probability of every score), and analysis are available at \ifanonymous \fillme{anonymized repository link}\else \url{https://github.com/absurdblady/small-llm-reviewers}\fi.
 
 \section*{Acknowledgments}
 I used an AI assistant (Claude, by Anthropic) to help write code, run analyses, and draft and edit the text. I reviewed all of the content and take full responsibility for it.
