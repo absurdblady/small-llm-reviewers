@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this code or these results, please cite it like this."
+title: "Can Small Language Models Review Research Papers? Leniency, Prompt Sensitivity, and Agreement with Human Reviewers on ICLR 2024 and 2025"
+type: software
+authors:
+  - family-names: Chaudhary
+    given-names: Pawan
+    affiliation: Dakota State University
+version: 1.0.0
+date-released: 2026-10-11
+repository-code: "https://github.com/absurdblady/small-llm-reviewers"
+license: MIT
+abstract: >-
+  Four small open language models (Qwen2.5 1.5B, 3B, 7B and Phi-3.5-mini) rate 400 ICLR 2024 and 2025
+  submissions from their title and abstract, using four prompts that ask the same question in different words.
+  The study measures how lenient the models are, how much the wording changes their verdict, how close they
+  come to a single human reviewer, and what they reward. Includes code, prompts, model outputs with per-score
+  probabilities, analysis, and the paper.
+keywords:
+  - large language models
+  - LLM-as-a-judge
+  - peer review
+  - prompt sensitivity
+  - evaluation

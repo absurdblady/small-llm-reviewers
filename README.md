@@ -60,6 +60,14 @@ notes/                         my writing notes and the revision checklist
 
 Models and datasets are pinned to exact versions, and the sampling is seeded, so the same papers and scores come out every time.
 
+## license and citing
+
+- **Code** (`notebooks/`, `analysis/`): MIT license, see [`LICENSE`](LICENSE).
+- **Paper, results, and figures** (`paper/`, `results/`): [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Use them freely, just credit the source.
+- **The ICLR titles, abstracts, and review ratings** in `data/` and in the scores files come from OpenReview. They belong to their authors and keep their original terms. I only redistribute them so the study can be checked.
+
+To cite this work, use the **"Cite this repository"** button on GitHub (it reads [`CITATION.cff`](CITATION.cff)).
+
 ## being honest about help
 
 I used an AI assistant (Claude, by Anthropic) for code, running analyses, and drafting and editing. The questions, the decisions, and the responsibility for every claim are mine, and I've gone through all of it.
